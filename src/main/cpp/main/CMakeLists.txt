@@ -40,12 +40,13 @@ set_target_properties(velox4j-shared PROPERTIES OUTPUT_NAME velox4j
         ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 # Install.
-install(IMPORTED_RUNTIME_ARTIFACTS velox4j-shared RUNTIME_DEPENDENCY_SET 3rd COMPONENT velox4j)
-install(RUNTIME_DEPENDENCY_SET 3rd COMPONENT velox4j PRE_EXCLUDE_REGEXES
+install(IMPORTED_RUNTIME_ARTIFACTS velox4j-shared RUNTIME_DEPENDENCY_SET 3rd DESTINATION lib COMPONENT velox4j)
+install(RUNTIME_DEPENDENCY_SET 3rd DESTINATION lib COMPONENT velox4j PRE_EXCLUDE_REGEXES
         "libc\\.so\\.[0-9]+"
         "libstdc\\+\\+\\.so\\.[0-9]+"
         "libgcc_s\\.so\\.[0-9]+"
         "libm\\.so\\.[0-9]+"
         "linux-vdso\\.so\\.[0-9]+"
         "ld-linux-x86-64\\.so\\.[0-9]+"
+        "libdl\\.so\\.[0-9]+"
 )
