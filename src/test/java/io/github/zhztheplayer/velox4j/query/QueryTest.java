@@ -26,6 +26,7 @@ import io.github.zhztheplayer.velox4j.memory.MemoryManager;
 import io.github.zhztheplayer.velox4j.plan.AggregationNode;
 import io.github.zhztheplayer.velox4j.plan.FilterNode;
 import io.github.zhztheplayer.velox4j.plan.HashJoinNode;
+import io.github.zhztheplayer.velox4j.plan.LimitNode;
 import io.github.zhztheplayer.velox4j.plan.OrderByNode;
 import io.github.zhztheplayer.velox4j.plan.ProjectNode;
 import io.github.zhztheplayer.velox4j.plan.TableScanNode;
@@ -36,7 +37,6 @@ import io.github.zhztheplayer.velox4j.test.TpchTests;
 import io.github.zhztheplayer.velox4j.test.UpIteratorTests;
 import io.github.zhztheplayer.velox4j.type.BigIntType;
 import io.github.zhztheplayer.velox4j.type.BooleanType;
-import io.github.zhztheplayer.velox4j.type.IntegerType;
 import io.github.zhztheplayer.velox4j.type.RowType;
 import io.github.zhztheplayer.velox4j.type.Type;
 import io.github.zhztheplayer.velox4j.type.VarCharType;
@@ -266,6 +266,25 @@ public class QueryTest {
     UpIteratorTests.assertIterator(itr)
         .assertNumRowVectors(1)
         .assertRowVectorToString(0, ResourceTests.readResourceAsString("query-output/tpch-orderby-1.tsv"))
+        .run();
+    jniApi.close();
+  }
+
+  @Test
+  public void testLimit() {
+    final JniApi jniApi = JniApi.create(memoryManager);
+    final File file = TpchTests.Table.NATION.file();
+    final RowType outputType = TpchTests.Table.NATION.schema();
+    final TableScanNode scanNode = newSampleScanNode("id-1", outputType);
+    final List<BoundSplit> splits = List.of(
+        newSampleSplit(scanNode, file)
+    );
+    final LimitNode limitNode = new LimitNode("id-2", List.of(scanNode), 5, 3, false);
+    final Query query = new Query(limitNode, splits, Config.empty(), ConnectorConfig.empty());
+    final UpIterator itr = query.execute(jniApi);
+    UpIteratorTests.assertIterator(itr)
+        .assertNumRowVectors(1)
+        .assertRowVectorToString(0, ResourceTests.readResourceAsString("query-output/tpch-limit-1.tsv"))
         .run();
     jniApi.close();
   }
