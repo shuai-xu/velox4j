@@ -7,21 +7,18 @@ import io.github.zhztheplayer.velox4j.expression.TypedExpr;
 
 import java.util.List;
 
-public class ProjectNode extends PlanNode {
+public class FilterNode extends PlanNode {
   private final List<PlanNode> sources;
-  private final List<String> names;
-  private final List<TypedExpr> projections;
+  private final TypedExpr filter;
 
   @JsonCreator
-  public ProjectNode(
+  public FilterNode(
       @JsonProperty("id") String id,
       @JsonProperty("sources") List<PlanNode> sources,
-      @JsonProperty("names") List<String> names,
-      @JsonProperty("projections") List<TypedExpr> projections) {
+      @JsonProperty("filter") TypedExpr filter) {
     super(id);
     this.sources = sources;
-    this.names = names;
-    this.projections = projections;
+    this.filter = filter;
   }
 
   @Override
@@ -29,13 +26,8 @@ public class ProjectNode extends PlanNode {
     return sources;
   }
 
-  @JsonGetter("names")
-  public List<String> names() {
-    return names;
-  }
-
-  @JsonGetter("projections")
-  public List<TypedExpr> projections() {
-    return projections;
+  @JsonGetter("filter")
+  public TypedExpr getFilter() {
+    return filter;
   }
 }
