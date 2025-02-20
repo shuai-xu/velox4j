@@ -2,23 +2,28 @@ package io.github.zhztheplayer.velox4j.data;
 
 import com.google.common.base.Preconditions;
 import io.github.zhztheplayer.velox4j.jni.JniApi;
+import io.github.zhztheplayer.velox4j.jni.Session;
+import io.github.zhztheplayer.velox4j.jni.StaticJniApi;
 import io.github.zhztheplayer.velox4j.type.Type;
 
 import java.util.List;
 
 public class BaseVectors {
-  private BaseVectors() {
+  private final JniApi jniApi;
+
+  public BaseVectors(JniApi jniApi) {
+    this.jniApi = jniApi;
   }
 
-  public static String serialize(JniApi jniApi, List<? extends BaseVector> vectors) {
-    return jniApi.baseVectorSerialize(vectors);
+  public static String serialize(List<? extends BaseVector> vectors) {
+    return StaticJniApi.get().baseVectorSerialize(vectors);
   }
 
   public static String serialize(BaseVector vector) {
-    return vector.jniApi().baseVectorSerialize(List.of(vector));
+    return StaticJniApi.get().baseVectorSerialize(List.of(vector));
   }
 
-  public static BaseVector deserialize(JniApi jniApi, String serialized) {
+  public BaseVector deserialize(String serialized) {
     final List<BaseVector> vectors = jniApi.baseVectorDeserialize(serialized);
     Preconditions.checkState(vectors.size() == 1,
         "Expected one vector, but got %s", vectors.size());
@@ -26,7 +31,7 @@ public class BaseVectors {
   }
 
   public static Type getType(BaseVector vector) {
-    return vector.jniApi().baseVectorGetType(vector);
+    return StaticJniApi.get().baseVectorGetType(vector);
   }
 
   public static BaseVector wrapInConstant(BaseVector vector, int length, int index) {
@@ -34,7 +39,7 @@ public class BaseVectors {
   }
 
   public static VectorEncoding getEncoding(BaseVector vector) {
-    return vector.jniApi().baseVectorGetEncoding(vector);
+    return StaticJniApi.get().baseVectorGetEncoding(vector);
   }
 
   public static RowVector asRowVector(BaseVector vector) {

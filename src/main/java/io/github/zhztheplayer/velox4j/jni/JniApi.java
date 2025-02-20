@@ -1,5 +1,6 @@
 package io.github.zhztheplayer.velox4j.jni;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.github.zhztheplayer.velox4j.data.BaseVector;
 import io.github.zhztheplayer.velox4j.data.RowVector;
 import io.github.zhztheplayer.velox4j.data.VectorEncoding;
@@ -23,26 +24,19 @@ import java.util.stream.Collectors;
  * details like native pointers and serialized data from developers, instead
  * provides objective forms of the required functionalities.
  */
-public final class JniApi implements AutoCloseable {
-  public static JniApi create(MemoryManager memoryManager) {
-    final Session session = StaticJniApi.get().createSession(memoryManager);
-    return new JniApi(session, JniWrapper.create(session));
+public final class JniApi {
+  static JniApi create(long sessionId) {
+    return new JniApi(JniWrapper.create(sessionId));
   }
 
-  private final Session session;
   private final JniWrapper jni;
 
-  private JniApi(Session session, JniWrapper jni) {
-    this.session = session;
+  private JniApi(JniWrapper jni) {
     this.jni = jni;
   }
 
   public UpIterator executeQuery(String queryJson) {
     return new UpIterator(this, jni.executeQuery(queryJson));
-  }
-
-  public boolean upIteratorHasNext(UpIterator itr) {
-    return jni.upIteratorHasNext(itr.id());
   }
 
   public RowVector upIteratorNext(UpIterator itr) {
@@ -53,15 +47,10 @@ public final class JniApi implements AutoCloseable {
     return new ExternalStream(jni.newExternalStream(itr));
   }
 
-  public Type variantInferType(Variant variant) {
-    final String variantJson = Serde.toJson(variant);
-    final String typeJson = jni.variantInferType(variantJson);
-    return Serde.fromJson(typeJson, Type.class);
-  }
-
   private BaseVector baseVectorWrap(long id) {
     // TODO Add JNI API `isRowVector` for performance.
-    final VectorEncoding encoding = VectorEncoding.valueOf(jni.baseVectorGetEncoding(id));
+    final VectorEncoding encoding = VectorEncoding.valueOf(
+        StaticJniWrapper.get().baseVectorGetEncoding(id));
     if (encoding == VectorEncoding.ROW) {
       return new RowVector(this, id);
     }
@@ -80,54 +69,27 @@ public final class JniApi implements AutoCloseable {
     return baseVectorWrap(jni.arrowToBaseVector(schema.memoryAddress(), array.memoryAddress()));
   }
 
-  public void baseVectorToArrow(BaseVector vector, ArrowSchema schema, ArrowArray array) {
-    jni.baseVectorToArrow(vector.id(), schema.memoryAddress(), array.memoryAddress());
-  }
-
-  public String baseVectorSerialize(List<? extends BaseVector> vector) {
-    return jni.baseVectorSerialize(vector.stream().mapToLong(BaseVector::id).toArray());
-  }
-
   public List<BaseVector> baseVectorDeserialize(String serialized) {
     return Arrays.stream(jni.baseVectorDeserialize(serialized))
         .mapToObj(this::baseVectorWrap)
         .collect(Collectors.toList());
   }
 
-  public Type baseVectorGetType(BaseVector vector) {
-    String typeJson = jni.baseVectorGetType(vector.id());
-    return Serde.fromJson(typeJson, Type.class);
-  }
-
   public BaseVector baseVectorWrapInConstant(BaseVector vector, int length, int index) {
     return baseVectorWrap(jni.baseVectorWrapInConstant(vector.id(), length, index));
-  }
-
-  public VectorEncoding baseVectorGetEncoding(BaseVector vector) {
-    return VectorEncoding.valueOf(jni.baseVectorGetEncoding(vector.id()));
   }
 
   public RowVector baseVectorAsRowVector(BaseVector vector) {
     return rowVectorWrap(jni.baseVectorNewRef(vector.id()));
   }
 
-  // For tests.
+  @VisibleForTesting
   public String deserializeAndSerialize(String json) {
     return jni.deserializeAndSerialize(json);
   }
 
-  // For tests.
-  public String deserializeAndSerializeVariant(String json) {
-    return jni.deserializeAndSerializeVariant(json);
-  }
-
-  // For tests.
+  @VisibleForTesting
   public UpIterator createUpIteratorWithExternalStream(ExternalStream es) {
     return new UpIterator(this, jni.createUpIteratorWithExternalStream(es.id()));
-  }
-
-  @Override
-  public void close() {
-    session.close();
   }
 }

@@ -17,60 +17,44 @@
 
 package io.github.zhztheplayer.velox4j.jni;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.github.zhztheplayer.velox4j.iterator.DownIterator;
 
 final class JniWrapper {
 
-  static JniWrapper create(Session session) {
-    return new JniWrapper(session);
+  static JniWrapper create(long sessionId) {
+    return new JniWrapper(sessionId);
   }
 
-  private final Session session;
+  private final long sessionId;
 
-  private JniWrapper(Session session) {
-    this.session = session;
+  private JniWrapper(long sessionId) {
+    this.sessionId = sessionId;
   }
 
   @CalledFromNative
   public long sessionId() {
-    return session.id();
+    return sessionId;
   }
 
   // Plan execution.
   native long executeQuery(String queryJson);
 
   // For UpIterator.
-  native boolean upIteratorHasNext(long address);
-
   native long upIteratorNext(long address);
 
   // For DownIterator.
   native long newExternalStream(DownIterator itr);
 
-  // For Variant.
-  native String variantInferType(String json);
-
   // For BaseVector / RowVector.
   native long arrowToBaseVector(long cSchema, long cArray);
-
-  native void baseVectorToArrow(long rvAddress, long cSchema, long cArray);
-
-  native String baseVectorSerialize(long[] id);
-
   native long[] baseVectorDeserialize(String serialized);
-
-  native String baseVectorGetType(long id);
-
   native long baseVectorWrapInConstant(long id, int length, int index);
-
-  native String baseVectorGetEncoding(long id);
-
   native long baseVectorNewRef(long id);
 
-  // For tests.
+  // For test.
+  @VisibleForTesting
   native String deserializeAndSerialize(String json);
-
-  native String deserializeAndSerializeVariant(String json);
-
+  @VisibleForTesting
   native long createUpIteratorWithExternalStream(long id);
 }
