@@ -6,7 +6,6 @@ import io.github.zhztheplayer.velox4j.data.BaseVector;
 import io.github.zhztheplayer.velox4j.data.RowVector;
 import io.github.zhztheplayer.velox4j.data.SelectivityVector;
 import io.github.zhztheplayer.velox4j.data.VectorEncoding;
-import io.github.zhztheplayer.velox4j.exception.VeloxException;
 import io.github.zhztheplayer.velox4j.eval.Evaluator;
 import io.github.zhztheplayer.velox4j.iterator.DownIterator;
 import io.github.zhztheplayer.velox4j.iterator.UpIterator;
@@ -42,29 +41,11 @@ public final class JniApi {
   }
 
   public RowVector upIteratorNext(UpIterator itr) {
-    return rowVectorWrap(jni.upIteratorNext(itr.id()));
+    return baseVectorWrap(jni.upIteratorNext(itr.id())).asRowVector();
   }
 
   public ExternalStream newExternalStream(DownIterator itr) {
     return new ExternalStream(jni.newExternalStream(itr));
-  }
-
-  private BaseVector baseVectorWrap(long id) {
-    // TODO Add JNI API `isRowVector` for performance.
-    final VectorEncoding encoding = VectorEncoding.valueOf(
-        StaticJniWrapper.get().baseVectorGetEncoding(id));
-    if (encoding == VectorEncoding.ROW) {
-      return new RowVector(this, id);
-    }
-    return new BaseVector(this, id);
-  }
-
-  private RowVector rowVectorWrap(long id) {
-    final BaseVector vector = baseVectorWrap(id);
-    if (vector instanceof RowVector) {
-      return ((RowVector) vector);
-    }
-    throw new VeloxException("Expected RowVector, got " + vector.getClass().getName());
   }
 
   public BaseVector arrowToBaseVector(ArrowSchema schema, ArrowArray array) {
@@ -81,10 +62,6 @@ public final class JniApi {
     return baseVectorWrap(jni.baseVectorWrapInConstant(vector.id(), length, index));
   }
 
-  public RowVector baseVectorAsRowVector(BaseVector vector) {
-    return rowVectorWrap(jni.baseVectorNewRef(vector.id()));
-  }
-
   public SelectivityVector createSelectivityVector(int length) {
     return new SelectivityVector(jni.createSelectivityVector(length));
   }
@@ -97,5 +74,11 @@ public final class JniApi {
   @VisibleForTesting
   public UpIterator createUpIteratorWithExternalStream(ExternalStream es) {
     return new UpIterator(this, jni.createUpIteratorWithExternalStream(es.id()));
+  }
+
+  private BaseVector baseVectorWrap(long id) {
+    final VectorEncoding encoding = VectorEncoding.valueOf(
+        StaticJniWrapper.get().baseVectorGetEncoding(id));
+    return BaseVector.wrap(this, id, encoding);
   }
 }
