@@ -1,12 +1,11 @@
 package io.github.zhztheplayer.velox4j.jni;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.github.zhztheplayer.velox4j.arrow.Arrow;
 import io.github.zhztheplayer.velox4j.connector.ExternalStreams;
 import io.github.zhztheplayer.velox4j.data.BaseVectors;
 import io.github.zhztheplayer.velox4j.data.RowVectors;
 import io.github.zhztheplayer.velox4j.data.SelectivityVectors;
-import io.github.zhztheplayer.velox4j.expression.Expressions;
+import io.github.zhztheplayer.velox4j.eval.Evaluations;
 import io.github.zhztheplayer.velox4j.query.Queries;
 import io.github.zhztheplayer.velox4j.session.Session;
 
@@ -18,7 +17,8 @@ public class LocalSession implements Session {
   }
 
   private JniApi jniApi() {
-    return JniApi.create(this);
+    final JniWrapper jniWrapper = new JniWrapper(this.id);
+    return new JniApi(jniWrapper);
   }
 
   @Override
@@ -27,8 +27,8 @@ public class LocalSession implements Session {
   }
 
   @Override
-  public Expressions expressionOps() {
-    return new Expressions(jniApi());
+  public Evaluations evaluationOps() {
+    return new Evaluations(jniApi());
   }
 
   @Override
