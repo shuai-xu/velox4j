@@ -1,7 +1,6 @@
 package io.github.zhztheplayer.velox4j.jni;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.github.zhztheplayer.velox4j.data.BaseVector;
 import io.github.zhztheplayer.velox4j.memory.AllocationListener;
 
 public class StaticJniWrapper {
@@ -11,7 +10,8 @@ public class StaticJniWrapper {
     return INSTANCE;
   }
 
-  private StaticJniWrapper() {}
+  private StaticJniWrapper() {
+  }
 
   // Global initialization.
   native void initialize(String globalConfJson);
