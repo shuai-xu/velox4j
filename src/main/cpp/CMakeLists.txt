@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.28)
 project(velox4jcpp)
 
+# Include CPM.cmake.
+set(CPM_SOURCE_CACHE ${CMAKE_CURRENT_BINARY_DIR}/.cpm-cache)
 include(cmake/CPM.cmake)
 
 # Preconditions.
@@ -44,13 +46,22 @@ if (NOT VELOX4J_BUILD_TESTING)
 endif ()
 
 # Import Velox.
+set(VELOX_PATCH_DIR ${CMAKE_CURRENT_LIST_DIR}/cmake/patches/velox)
 set(VELOX_REF_FILE ${CMAKE_CURRENT_LIST_DIR}/velox-ref.txt)
 set(VELOX_REF_HASH_FILE ${CMAKE_CURRENT_LIST_DIR}/velox-ref-hash.txt)
 set(VELOX_REPO facebookincubator/velox)
 file(STRINGS ${VELOX_REF_FILE} VELOX_REF)
 file(STRINGS ${VELOX_REF_HASH_FILE} VELOX_SOURCE_URL_MD5)
 set(VELOX_SOURCE_URL "https://github.com/${VELOX_REPO}/archive/${VELOX_REF}.zip")
-CPMAddPackage(NAME velox URL ${VELOX_SOURCE_URL} URL_HASH MD5=${VELOX_SOURCE_URL_MD5})
+CPMAddPackage(
+        NAME velox
+        URL ${VELOX_SOURCE_URL}
+        URL_HASH MD5=${VELOX_SOURCE_URL_MD5}
+        PATCHES
+        "${VELOX_PATCH_DIR}/0001-fix-Fix-ambiguous-sources-serde-logic-for-TableWrite.patch"
+        "${VELOX_PATCH_DIR}/0002-fix-Change-FetchContent-name-of-gtest-to-googletest-.patch"
+        "${VELOX_PATCH_DIR}/0003-feat-Add-JSON-SerDe-code-for-member-field-LocationHa.patch"
+)
 
 # Import JniHelpers.
 set(JNI_HELPERS_REPO zhztheplayer/JniHelpersCpp)
