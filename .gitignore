@@ -23,9 +23,9 @@
 hs_err_pid*
 replay_pid*
 
-# IDEs
+# Others
 .idea
-
-# C++
-cmake-build-*
-build
+/target
+/src/main/cpp/cmake-build-*
+/src/main/cpp/build
+a.out
