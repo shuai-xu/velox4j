@@ -45,10 +45,8 @@ class MemoryManager {
 
   arrow::MemoryPool* getArrowPool(const std::string& name);
 
-  void holdPools();
-
  private:
-  bool tryDestructSafe();
+  bool tryDestruct();
 
   const std::unique_ptr<AllocationListener> listener_;
   std::unique_ptr<MemoryAllocator> arrowAllocator_;
@@ -56,8 +54,9 @@ class MemoryManager {
       arrowPoolRefs_;
   std::unique_ptr<facebook::velox::memory::MemoryManager> veloxMemoryManager_;
   std::shared_ptr<facebook::velox::memory::MemoryPool> veloxRootPool_;
-  std::unordered_map<std::string, std::shared_ptr<facebook::velox::memory::MemoryPool>>
+  std::unordered_map<
+      std::string,
+      std::shared_ptr<facebook::velox::memory::MemoryPool>>
       veloxPoolRefs_;
-  std::vector<std::shared_ptr<facebook::velox::memory::MemoryPool>> heldVeloxPoolRefs_;
 };
 } // namespace velox4j
