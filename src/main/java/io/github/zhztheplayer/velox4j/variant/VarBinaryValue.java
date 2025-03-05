@@ -15,8 +15,8 @@ public class VarBinaryValue extends Variant {
     this.base64 = base64;
   }
 
-  public static VarBinaryValue create(byte[] value) {
-    return new VarBinaryValue(Base64.getEncoder().encodeToString(value));
+  public static VarBinaryValue create(byte[] bytes) {
+    return new VarBinaryValue(Base64.getEncoder().encodeToString(bytes));
   }
 
   @JsonGetter("value")
