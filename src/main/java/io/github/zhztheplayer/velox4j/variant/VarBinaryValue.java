@@ -8,20 +8,20 @@ import java.util.Base64;
 import java.util.Objects;
 
 public class VarBinaryValue extends Variant {
-  private final String value;
+  private final String base64;
 
   @JsonCreator
-  private VarBinaryValue(@JsonProperty("value") String value) {
-    this.value = value;
+  public VarBinaryValue(@JsonProperty("value") String base64) {
+    this.base64 = base64;
   }
 
-  public static VarBinaryValue create(byte[] value) {
-    return new VarBinaryValue(Base64.getEncoder().encodeToString(value));
+  public static VarBinaryValue create(byte[] bytes) {
+    return new VarBinaryValue(Base64.getEncoder().encodeToString(bytes));
   }
 
   @JsonGetter("value")
-  public String getValue() {
-    return value;
+  public String getBase64() {
+    return base64;
   }
 
   @Override
@@ -29,18 +29,18 @@ public class VarBinaryValue extends Variant {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     VarBinaryValue that = (VarBinaryValue) o;
-    return Objects.equals(value, that.value);
+    return Objects.equals(base64, that.base64);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(value);
+    return Objects.hashCode(base64);
   }
 
   @Override
   public String toString() {
     return "VarBinaryValue{" +
-        "value='" + value + '\'' +
+        "base64='" + base64 + '\'' +
         '}';
   }
 }
