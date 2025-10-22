@@ -31,12 +31,18 @@ public abstract class StatefulElement {
 
   public abstract boolean isRecord();
 
+  public abstract boolean isPartitionInfo();
+
   public StatefulWatermark asWatermark() {
     return (StatefulWatermark) this;
   }
 
   public StatefulRecord asRecord() {
     return (StatefulRecord) this;
+  }
+
+  public StatefulPartitionCommitInfo asPartitionInfo() {
+    return (StatefulPartitionCommitInfo) this;
   }
 
   public void close() {

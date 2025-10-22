@@ -64,6 +64,11 @@ public class StatefulRecord extends StatefulElement {
     return true;
   }
 
+  @Override
+  public boolean isPartitionInfo() {
+    return false;
+  }
+
   public boolean hasTimestamp() {
     return hasTimestamp;
   }

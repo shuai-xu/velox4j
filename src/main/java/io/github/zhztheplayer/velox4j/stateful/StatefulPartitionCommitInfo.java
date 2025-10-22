@@ -16,21 +16,45 @@
 */
 package io.github.zhztheplayer.velox4j.stateful;
 
-public class StatefulWatermark extends StatefulElement {
-  private final long timestamp;
+public class StatefulPartitionCommitInfo extends StatefulElement {
 
-  public StatefulWatermark(String nodeId, long timestamp) {
+  private long checkpointId;
+  private int taskId;
+  private int numberOfTasks;
+  private String[] partitions;
+
+  public StatefulPartitionCommitInfo(
+      String nodeId,
+      long checkpointId,
+      int taskId,
+      int numberOfTasks,
+      String[] partitions) {
     super(nodeId);
-    this.timestamp = timestamp;
+    this.checkpointId = checkpointId;
+    this.taskId = taskId;
+    this.numberOfTasks = numberOfTasks;
+    this.partitions = partitions;
   }
 
-  public long getTimestamp() {
-    return timestamp;
+  public long getCheckpointId() {
+    return checkpointId;
+  }
+
+  public int getTaskId() {
+    return taskId;
+  }
+
+  public int getNumberOfTasks() {
+    return numberOfTasks;
+  }
+
+  public String[] getPartitions() {
+    return partitions;
   }
 
   @Override
   public boolean isWatermark() {
-    return true;
+    return false;
   }
 
   @Override
@@ -40,6 +64,6 @@ public class StatefulWatermark extends StatefulElement {
 
   @Override
   public boolean isPartitionInfo() {
-    return false;
+    return true;
   }
 }

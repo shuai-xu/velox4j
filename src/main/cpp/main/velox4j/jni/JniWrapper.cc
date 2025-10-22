@@ -139,6 +139,39 @@ jobject statefulTaskGet(JNIEnv* env, jobject javaThis, jlong itrId) {
     env->DeleteLocalRef(id);
     env->DeleteLocalRef(resultClass);
     return result;
+  } else if (element->isPartitionInfo()) {
+    VELOX_CHECK(element->isRecord());
+    auto info = std::static_pointer_cast<stateful::PartitionCommitInfo>(element);
+
+    jclass resultClass =
+        env->FindClass("io/github/zhztheplayer/velox4j/stateful/StatefulPartitionCommitInfo");
+    jmethodID constructor = env->GetMethodID(resultClass, "<init>", "(Ljava/lang/String;JII[Ljava/lang/String;)V");
+
+    jstring id = env->NewStringUTF(info->nodeId().c_str());
+
+    const std::set<std::string>& partitionsVec = info->partitions();
+    jclass stringClass = env->FindClass("java/lang/String");
+    jobjectArray jarrayPartitions = env->NewObjectArray(partitionsVec.size(), stringClass, nullptr);
+    size_t i = 0;
+    for (auto & partition : partitionsVec) {
+        jstring jstr = env->NewStringUTF(partition.c_str());
+        env->SetObjectArrayElement(jarrayPartitions, i++, jstr);
+        env->DeleteLocalRef(jstr);
+    }
+
+    jobject result = env->NewObject(
+        resultClass,
+        constructor,
+        id,
+        info->checkpointId(),
+        info->taskId(),
+        info->numberOfTasks(),
+        jarrayPartitions);
+
+    env->DeleteLocalRef(stringClass);
+    env->DeleteLocalRef(id);
+    env->DeleteLocalRef(resultClass);
+    return result;
   } else {
     VELOX_CHECK(element->isRecord());
     auto record = std::static_pointer_cast<stateful::StreamRecord>(element);
